@@ -2,6 +2,7 @@ from PyQt4 import QtGui, QtCore
 import dialogs
 import scanner
 import os
+import tools
 
 class icon:
     def __init__(self, extension, fpath):
@@ -143,6 +144,7 @@ class main_frame(QtGui.QMainWindow):
     
     def init_ui(self):
         
+        self.setWindowIcon(QtGui.QIcon("assets/icon.png"))
         
         self.init_menu()
         
@@ -213,6 +215,10 @@ class main_frame(QtGui.QMainWindow):
         b_grid.addWidget(self.cbox_genre, 4, 1)
         b_grid.addWidget(self.cb_genre, 4, 2)
         
+        genres = tools.genre_list('genres.list')
+        for g in genres.genres:
+            self.cbox_genre.addItem(g)
+        
         b_grid.addWidget(self.btn_tag_to_name, 5, 0)
     
         
@@ -249,6 +255,10 @@ class main_frame(QtGui.QMainWindow):
     def tag_to_name(self):
         
         checked = self.get_checked_items()
+        
+        if len(checked) == 0:
+            return
+        
         files = []
         for c in checked:
             
@@ -265,6 +275,9 @@ class main_frame(QtGui.QMainWindow):
     def get_checked_items(self, item_root = None):
         if item_root == None:
             item_root = self.tree_files.topLevelItem(0)
+        
+        if item_root == None:
+            return []
         
         checked = []
         
