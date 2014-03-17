@@ -6,6 +6,19 @@ Created on Mar 17, 2014
 from PyQt4 import QtGui, QtCore
 import file_edit
 
+class pattern_help_dialog(QtGui.QDialog):
+    
+    def __init__(self, parent):
+        super(pattern_help_dialog, self).__init__(parent)
+        
+        self.init_ui()
+        
+    def init_ui(self):
+        
+        self.setGeometry(200, 100, 350, 400)
+        self.setWindowTitle("Filename Pattern Help")
+        self.show()
+
 class file_rename_dialog(QtGui.QDialog):
     
     def __init__(self, parent, pattern):

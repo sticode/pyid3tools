@@ -156,6 +156,8 @@ class main_frame(QtGui.QMainWindow):
         #filename pattern
         self.lbl_filename = QtGui.QLabel("Filename : ")
         self.tb_filename = QtGui.QLineEdit("%01 - %02")
+        self.btn_pattern_help = QtGui.QPushButton("Help ?")
+        self.btn_pattern_help.clicked.connect(self.dialog_pattern_help)
         
         
         #batch artist update
@@ -198,6 +200,7 @@ class main_frame(QtGui.QMainWindow):
         #adding widget to tag grid
         b_grid.addWidget(self.lbl_filename, 0, 0)
         b_grid.addWidget(self.tb_filename, 0, 1)
+        b_grid.addWidget(self.btn_pattern_help, 0, 2)
         
         b_grid.addWidget(self.lbl_artist, 1, 0)
         b_grid.addWidget(self.tb_artist, 1, 1)
@@ -271,6 +274,10 @@ class main_frame(QtGui.QMainWindow):
         dialog = dialogs.file_rename_dialog(self, str(self.tb_filename.text()))
         dialog.files = files
         dialog.init_ops()
+        
+    def dialog_pattern_help(self):
+
+        dialogs.pattern_help_dialog(self)
  
     def get_checked_items(self, item_root = None):
         if item_root == None:
@@ -369,4 +376,8 @@ class main_frame(QtGui.QMainWindow):
             if f.is_file():
                 print f.pprint()
                 dialog = dialogs.file_info_dialog(self, f)
+                
+
+if __name__ == "__main__":
+    print "You need to use 'pyid3tools.py' to launch this application..."
             
