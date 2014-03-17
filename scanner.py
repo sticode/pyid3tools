@@ -14,6 +14,9 @@ class folder:
         self.files = []
         self.folders = []
         self.item = None
+    
+    def is_file(self):
+        return False
 
     def find_file(self, item):
         
@@ -22,6 +25,9 @@ class folder:
                 return f
         
         for f in self.folders:
+            if f.item == item:
+                return f
+            
             rs = self.walk(f, item)
             if not rs == None:
                 return rs
@@ -35,6 +41,9 @@ class folder:
                 return f
         
         for f in parent.folders:
+            if f.item == item:
+                return f
+            
             rs = self.walk(f, item)
             if not rs == None:
                 return rs
