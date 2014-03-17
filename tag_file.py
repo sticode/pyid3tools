@@ -1,4 +1,5 @@
 from mutagen.mp3 import EasyMP3
+from PyQt4 import QtCore
 import os
 
 class available_tags:
@@ -22,6 +23,25 @@ class id3_file:
             
         except:
             self.m_tags = None
+    
+    
+    def update_path(self, new_filepath):
+        self.path = new_filepath
+        self.filename = os.path.basename(self.path)
+        self.parent = os.path.dirname(self.path)
+        self.extension = self.path.split('.')[-1]
+        
+        if not self.item == None:
+            self.item.setText(0, self.filename)
+            self.item.setCheckState(0, QtCore.Qt.Unchecked)
+        try:
+            self.m_tags = EasyMP3(self.path)
+            
+            #print self.m_tags.keys()
+            
+        except:
+            self.m_tags = None
+        
     
     def is_file(self):
         return True

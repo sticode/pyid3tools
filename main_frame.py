@@ -1,80 +1,13 @@
 from PyQt4 import QtGui, QtCore
+import dialogs
 import scanner
-import sys
+import os
 
 class icon:
     def __init__(self, extension, fpath):
         self.extension = extension
         self.path = fpath
         self.icon = QtGui.QIcon(fpath)
-
-class file_info_dialog(QtGui.QDialog):
-    
-    def __init__(self, parent, file):
-        super(file_info_dialog, self).__init__(parent)
-        self.file = file
-        self.init_ui()
-    
-    def init_ui(self):
-        
-        self.lbl_filename = QtGui.QLabel("Path : " + self.file.path)
-        
-        self.btn_add_tag = QtGui.QPushButton("Add Tag...")
-        
-        self.btn_remove_tag = QtGui.QPushButton("Remove tag")
-        
-        self.btn_close = QtGui.QPushButton("Close")
-        self.btn_close.clicked.connect(self.close)
-        
-        self.tbl_tags = QtGui.QTableWidget()
-        
-        columns = QtCore.QStringList()
-        
-        columns.append("Name")
-        columns.append("Value")
-        
-        self.tbl_tags.setColumnCount(2)
-        self.tbl_tags.setHorizontalHeaderLabels(columns)
-        
-        grid = QtGui.QGridLayout()
-        grid.setSpacing(10)
-        
-        grid.addWidget(self.lbl_filename, 0, 0)
-        grid.addWidget(self.tbl_tags, 2, 0, 4, 4)
-        
-        grid.addWidget(self.btn_add_tag, 7, 1)
-        grid.addWidget(self.btn_remove_tag, 7, 2)
-        grid.addWidget(self.btn_close, 7, 3)
-        
-        self.setLayout(grid)
-        self.setGeometry(100, 100, 500, 400)
-        self.setWindowTitle("File Information : " + self.file.filename)
-        self.show()
-        
-        self.fill_tags()
-        
-    def fill_tags(self):
-        
-        tags = self.file.m_tags
-        #self.tbl_tags.insertColumn(2)
-        
-        if not tags == None: 
-            ri = 0 
-            print tags.keys()
-            for k in self.file.m_tags.keys():
-                self.tbl_tags.insertRow(ri)
-                #self.tbl_tags.setRowCount(ri)
-                cell = QtGui.QTableWidgetItem(k)
-                cell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-                self.tbl_tags.setItem(ri, 0, cell)
-                
-                cell = QtGui.QTableWidgetItem(tags[k][0])
-                cell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
-                self.tbl_tags.setItem(ri, 1, cell)
-                
-                ri = ri + 1
-                    
-        
         
 
 class main_frame(QtGui.QMainWindow):
@@ -107,17 +40,23 @@ class main_frame(QtGui.QMainWindow):
     def open_folder_dialog(self):
         
         self.tree_files.clear()
+        self.init_tree_columns()
         self.root = None
         
         fpath = QtGui.QFileDialog.getExistingDirectory(self, "Choose a folder")
         
-        fscan = scanner.folder_scanner(str(fpath))
+        fpath = str(fpath)
         
-        fscan.read_root()
-        
-        self.root = fscan.root
-        
-        self.fill_tree()
+        if os.path.exists(fpath):   
+            fscan = scanner.folder_scanner(fpath)
+            
+            fscan.read_root()
+            
+            self.root = fscan.root
+            
+            self.fill_tree()
+        else:
+            QtGui.QMessageBox.warning(self, "Warning !","Invalid folder selected")
     
     def fill_tree(self):
         
@@ -194,9 +133,13 @@ class main_frame(QtGui.QMainWindow):
         self.open_folder = QtGui.QAction("Open folder...", self)
         self.open_folder.triggered.connect(self.open_folder_dialog)
         
+        self.close_apps = QtGui.QAction("Quit", self)
+        self.close_apps.triggered.connect(self.close)
+        
         self.file_menu = self.menu.addMenu("&File")
         
         self.file_menu.addAction(self.open_folder)
+        self.file_menu.addAction(self.close_apps)
     
     def init_ui(self):
         
@@ -271,6 +214,7 @@ class main_frame(QtGui.QMainWindow):
         b_grid.addWidget(self.cb_genre, 4, 2)
         
         b_grid.addWidget(self.btn_tag_to_name, 5, 0)
+    
         
         self.gb_fields.setLayout(b_grid)
         self.gb_fields.setGeometry(10, 30, 400, 210)
@@ -278,7 +222,16 @@ class main_frame(QtGui.QMainWindow):
         self.tree_files = QtGui.QTreeWidget(self)
         self.tree_files.setGeometry(10, 250, 860, 400)
         
+        self.tree_files.itemDoubleClicked.connect(self.item_double_clicked)
+        self.tree_files.itemClicked.connect(self.item_clicked)
+            
+        self.init_tree_columns()
+            
+        self.setGeometry(100, 100, 900, 700)
+        self.setWindowTitle("Py ID3 Tools")
+        self.show()
         
+    def init_tree_columns(self):
         columns = QtCore.QStringList()
         
         columns.append("Name")
@@ -287,23 +240,28 @@ class main_frame(QtGui.QMainWindow):
         columns.append("Album")
         columns.append("Track")
         columns.append("Genre")
-        columns.append("Tag Version")
+        #columns.append("Tag Version")
         
         self.tree_files.setColumnCount(columns.count())
         self.tree_files.setHeaderLabels(columns)
-        self.tree_files.itemDoubleClicked.connect(self.item_double_clicked)
-        self.tree_files.itemClicked.connect(self.item_clicked)
-            
-        self.setGeometry(100, 100, 900, 700)
-        self.setWindowTitle("Py ID3 Tools")
-        self.show()
+        
         
     def tag_to_name(self):
         
         checked = self.get_checked_items()
+        files = []
         for c in checked:
-            print str(c.text(0))
-    
+            
+            f = self.root.find_file(c)
+            
+            if not f == None:
+                files.append(f)
+                
+        
+        dialog = dialogs.file_rename_dialog(self, str(self.tb_filename.text()))
+        dialog.files = files
+        dialog.init_ops()
+ 
     def get_checked_items(self, item_root = None):
         if item_root == None:
             item_root = self.tree_files.topLevelItem(0)
@@ -397,12 +355,5 @@ class main_frame(QtGui.QMainWindow):
         if not f == None:
             if f.is_file():
                 print f.pprint()
-                dialog = file_info_dialog(self, f)
+                dialog = dialogs.file_info_dialog(self, f)
             
-
-if __name__ == '__main__':
-
-    app = QtGui.QApplication(sys.argv)
-    
-    frame = main_frame()
-    sys.exit(app.exec_())
