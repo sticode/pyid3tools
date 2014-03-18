@@ -118,29 +118,76 @@ class main_frame(QtGui.QMainWindow):
             
     
     def fill_file_widget(self, file_widget, file_data):
-        file_widget.setText(1, file_data.get_artist())
-        file_widget.setText(2, file_data.get_title())
-        file_widget.setText(3, file_data.get_album())
-        file_widget.setText(4, file_data.get_track())
-        file_widget.setText(5, file_data.get_genre())
+        try:
+            file_widget.setText(1, file_data.get_artist())
+            file_widget.setText(2, file_data.get_title())
+            file_widget.setText(3, file_data.get_album())
+            file_widget.setText(4, file_data.get_track())
+            file_widget.setText(5, file_data.get_genre())
+        except:
+            file_widget.setText(6, "Error Reading Tag")
+            print "error reading tag"
         
         file_widget.setFlags(file_widget.flags() | QtCore.Qt.ItemIsUserCheckable)
         file_widget.setCheckState(0, QtCore.Qt.Unchecked)
         
+    def check_all_items(self):
+        self.recursive_checked(self.root, QtCore.Qt.Checked)
     
+    def uncheck_all_items(self):
+        self.recursive_checked(self.root, QtCore.Qt.Unchecked)
+    
+    def name_to_tag(self):
+        
+        print "TO DO"
+        artist = None
+        date = None
+        album = None
+        genre = None
+        
+        if self.cb_artist.checkState() == QtCore.Qt.Checked:
+            artist = str(self.tb_artist.text())
+        
+        if self.cb_year.checkState() == QtCore.Qt.Checked:
+            date = str(self.tb_year.text())
+        
+        if self.cb_album.checkState() == QtCore.Qt.Checked:
+            album = str(self.tb_album)
+        
+        if self.cb_genre.checkState() == QtCore.Qt.Checked:
+            genre = str(self.cbox_genre.currentText())
+        
+        
+        
+        
     def init_menu(self):
         self.menu =  self.menuBar()
         
+        #file menu
         self.open_folder = QtGui.QAction("Open folder...", self)
         self.open_folder.triggered.connect(self.open_folder_dialog)
         
         self.close_apps = QtGui.QAction("Quit", self)
         self.close_apps.triggered.connect(self.close)
         
+        #edit menu
+        self.edit_check_all = QtGui.QAction("Check all", self)
+        self.edit_check_all.triggered.connect(self.check_all_items)
+        
+        self.edit_uncheck_all = QtGui.QAction("Uncheck all", self)
+        self.edit_uncheck_all.triggered.connect(self.uncheck_all_items)
+
+        
         self.file_menu = self.menu.addMenu("&File")
+        
+        self.edit_menu = self.menu.addMenu("&Edit")
+        
         
         self.file_menu.addAction(self.open_folder)
         self.file_menu.addAction(self.close_apps)
+        
+        self.edit_menu.addAction(self.edit_check_all)
+        self.edit_menu.addAction(self.edit_uncheck_all)
     
     def init_ui(self):
         
@@ -197,6 +244,9 @@ class main_frame(QtGui.QMainWindow):
         self.btn_tag_to_name = QtGui.QPushButton("Tag to Filename")
         self.btn_tag_to_name.clicked.connect(self.tag_to_name)
         
+        self.btn_name_to_tag = QtGui.QPushButton("Filename to tag")
+        self.btn_name_to_tag.clicked.connect(self.name_to_tag)
+        
         #adding widget to tag grid
         b_grid.addWidget(self.lbl_filename, 0, 0)
         b_grid.addWidget(self.tb_filename, 0, 1)
@@ -223,7 +273,7 @@ class main_frame(QtGui.QMainWindow):
             self.cbox_genre.addItem(g)
         
         b_grid.addWidget(self.btn_tag_to_name, 5, 0)
-    
+        b_grid.addWidget(self.btn_name_to_tag, 5, 1)
         
         self.gb_fields.setLayout(b_grid)
         self.gb_fields.setGeometry(10, 30, 400, 210)
@@ -249,6 +299,7 @@ class main_frame(QtGui.QMainWindow):
         columns.append("Album")
         columns.append("Track")
         columns.append("Genre")
+        columns.append("Other info")
         #columns.append("Tag Version")
         
         self.tree_files.setColumnCount(columns.count())
@@ -374,9 +425,8 @@ class main_frame(QtGui.QMainWindow):
         
         if not f == None:
             if f.is_file():
-                print f.pprint()
-                dialog = dialogs.file_info_dialog(self, f)
-                
+                #print f.pprint()
+                dialogs.file_info_dialog(self, f)
 
 if __name__ == "__main__":
     print "You need to use 'pyid3tools.py' to launch this application..."

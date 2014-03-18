@@ -18,9 +18,45 @@ tag_dict = {
     '%01' : 'tracknumber',
     '%02' : 'title',
     '%03' : 'artist',
-    '%04' : 'date'            
+    '%04' : 'date',
+    '%05' : 'album'            
 }
 
+class field:
+    
+    def __int__(self, name, val):
+        self.name = name
+        self.value = val
+
+class filename_parser:
+    
+    def __int__(self, tag_file, pattern = ""):
+        self.file = tag_file
+        self.pattern = pattern
+        self.name_fields = []
+        self.form_fields = []
+        
+    def do(self):
+        artist = None
+        album = None
+        date = None
+        genre = None
+        tracknumber = None
+        title = None
+        
+        for b in self.form_fields:
+            if b.name == 'artist':
+                artist = b.value
+            elif b.name == 'album':
+                album = b.value
+            elif b.name == 'date':
+                date = b.value
+            elif b.name == 'tracknumber':
+                tracknumber = b.value
+            elif b.name == 'title':
+                title = b.value
+                
+        
 
 class tag_to_filename:
     
