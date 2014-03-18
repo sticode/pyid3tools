@@ -14,6 +14,7 @@ class folder:
         self.files = []
         self.folders = []
         self.item = None
+        self.count = 0
     
     def is_file(self):
         return False
@@ -52,6 +53,7 @@ class folder:
 
     def add_file(self, file):
         self.files.append(file)
+        self.count = self.count + 1
     
     def add_folder(self, folder):
         self.folders.append(folder)
@@ -69,6 +71,7 @@ class folder_scanner:
     def __init__(self, folder_path):
         self.path = folder_path
         self.root = folder(folder_path)
+        self.count = 0
     
     
     def read_root(self):
@@ -122,5 +125,6 @@ class folder_scanner:
             
         if not ftag == None:
             if ftag.is_handled():
+                self.count = self.count + 1
                 container.add_file(ftag)
             

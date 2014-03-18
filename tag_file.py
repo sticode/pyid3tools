@@ -15,6 +15,7 @@ class id3_file:
         self.parent = os.path.dirname(self.path)
         self.extension = self.path.split('.')[-1]
         self.item = None
+        self.errors = []
         
         try:
             self.m_tags = EasyMP3(self.path)
@@ -24,6 +25,11 @@ class id3_file:
         except:
             self.m_tags = None
     
+    def contains_errors(self):
+        
+        if len(self.errors) > 0:
+            return True
+        return False
     
     def update_path(self, new_filepath):
         self.path = new_filepath
@@ -61,39 +67,63 @@ class id3_file:
         return False
 
     def get_album(self):
-        if not self.m_tags == None:
-            return self.m_tags["album"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["album"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("album not readable")
             return ""
     
     def get_genre(self):
-        if not self.m_tags == None:
-            return self.m_tags["genre"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["genre"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("genre not readable")
             return ""
     
     def get_track(self):
-        if not self.m_tags == None:
-            return self.m_tags["tracknumber"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["tracknumber"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("tracknumber not readable")
             return ""
 
     def get_artist(self):
-        if not self.m_tags == None:
-            return self.m_tags["artist"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["artist"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("artist not readable")
             return ""
     
     def get_date(self):
-        if not self.m_tags == None:
-            return self.m_tags["date"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["date"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("date not readable")
             return ""
 
     def get_title(self):
-        if not self.m_tags == None:
-            return self.m_tags["title"][0]
-        else:
+        try:
+            if not self.m_tags == None:
+                return self.m_tags["title"][0]
+            else:
+                return ""
+        except:
+            self.errors.append("title not readable")
             return ""
     
     

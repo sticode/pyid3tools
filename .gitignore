@@ -12,6 +12,7 @@
 *.pdb
 *.suo
 *.obj
+*.db
 */bin/*
 */obj/*
 #bin/*

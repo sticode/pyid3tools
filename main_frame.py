@@ -3,6 +3,7 @@ import dialogs
 import scanner
 import os
 import tools
+import database
 
 class icon:
     def __init__(self, extension, fpath):
@@ -13,14 +14,21 @@ class icon:
 
 class main_frame(QtGui.QMainWindow):
     
-    def __init__(self):
+    def __init__(self, db_persist = False):
         super(main_frame, self).__init__()
         
+        self.db_persist = db_persist
         self.init_ui()
         self.root = None
         self.audio_icons = []
         self.folder_icon = None
         self.load_icons()
+        self.db = database.connector("pyid3tools.db") #to do, config file
+        self.db.open()
+    
+    def closeEvent(self, e):
+        self.db.commit()
+        self.db.close()
         
     def load_icons(self):
         
@@ -55,7 +63,10 @@ class main_frame(QtGui.QMainWindow):
             
             self.root = fscan.root
             
+            self.statusBar().showMessage(str(fscan.count) + " file(s) scanned !")
+            
             self.fill_tree()
+            
         else:
             QtGui.QMessageBox.warning(self, "Warning !","Invalid folder selected")
     
@@ -124,6 +135,17 @@ class main_frame(QtGui.QMainWindow):
             file_widget.setText(3, file_data.get_album())
             file_widget.setText(4, file_data.get_track())
             file_widget.setText(5, file_data.get_genre())
+            
+            if file_data.contains_errors():
+                error_str = ""
+                for e in file_data.errors:
+                    error_str = error_str + e + ", "
+                
+                error_str = error_str.strip()
+                error_str = error_str.strip(',')
+                
+                file_widget.setText(6, error_str)
+            
         except:
             file_widget.setText(6, "Error Reading Tag")
             print "error reading tag"
@@ -156,8 +178,30 @@ class main_frame(QtGui.QMainWindow):
         
         if self.cb_genre.checkState() == QtCore.Qt.Checked:
             genre = str(self.cbox_genre.currentText())
+    
+    def export_to_sqlite(self):
         
+        print "todo"
+        if not self.root == None:
+            for f in self.root.folders:
+                self.export_folder(f)
+            for f in self.root.files:
+                self.export_file(f)
         
+    
+    def export_folder(self, folder):
+        
+        for f in folder.folders:
+            self.export_folder(f)
+        
+        for f in folder.files:
+            self.export_file(f)
+            
+    def export_file(self, tfile):
+        
+        fr = database.file_row(self.db)
+        fr.from_tagfile(tfile)
+        fr.save()
         
         
     def init_menu(self):
@@ -166,6 +210,9 @@ class main_frame(QtGui.QMainWindow):
         #file menu
         self.open_folder = QtGui.QAction("Open folder...", self)
         self.open_folder.triggered.connect(self.open_folder_dialog)
+        
+        self.export_to_db = QtGui.QAction("Export to database...", self)
+        self.export_to_db.triggered.connect(self.export_to_sqlite)
         
         self.close_apps = QtGui.QAction("Quit", self)
         self.close_apps.triggered.connect(self.close)
@@ -184,6 +231,7 @@ class main_frame(QtGui.QMainWindow):
         
         
         self.file_menu.addAction(self.open_folder)
+        self.file_menu.addAction(self.export_to_db)
         self.file_menu.addAction(self.close_apps)
         
         self.edit_menu.addAction(self.edit_check_all)
@@ -194,6 +242,8 @@ class main_frame(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon("assets/icon.png"))
         
         self.init_menu()
+        
+        self.statusBar().showMessage("PyID3Tools started !")
         
         self.gb_fields = QtGui.QGroupBox("File configuration", self)
         
@@ -304,6 +354,11 @@ class main_frame(QtGui.QMainWindow):
         
         self.tree_files.setColumnCount(columns.count())
         self.tree_files.setHeaderLabels(columns)
+        
+        self.tree_files.setColumnWidth(0, 300)
+        self.tree_files.setColumnWidth(1, 200)
+        self.tree_files.setColumnWidth(2, 200)
+        self.tree_files.setColumnWidth(3, 200)
         
         
     def tag_to_name(self):
